@@ -165,7 +165,7 @@ class ContenidoQRForm(forms.ModelForm):
             }),
             'curiosidades': forms.Textarea(attrs={
                 'class': 'form-control',
-                'placeholder': 'Curiosidades...',
+                'placeholder': 'Pista para el siguiente QR...',
                 'rows': 3
             }),
             'activo': forms.CheckboxInput(attrs={
