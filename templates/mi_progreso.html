@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Progreso - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <!-- Tarjeta de perfil -->
+            <div class="card content-box h-100">
+                <div class="text-center">
+                    <img src="{% if usuario_museo.avatar %}{{ usuario_museo.avatar.url }}{% else %}https://via.placeholder.com/150{% endif %}" 
+                         alt="Avatar" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                    
+                    <h5>{{ user.first_name | default:user.username }}</h5>
+                    <p class="text-muted">{{ user.email }}</p>
+                    
+                    {% if usuario_museo %}
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Nivel</strong></p>
+                            <span class="badge bg-success" style="font-size: 1rem;">{{ usuario_museo.nivel }}</span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Puntos</strong></p>
+                            <h4>{{ usuario_museo.puntos }} 🏆</h4>
+                        </div>
+                    {% endif %}
+                    
+                    <a href="{% url 'editar_perfil' %}" class="btn btn-sm btn-primary w-100">
+                        <i class="fas fa-edit"></i> Editar Perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <!-- Estadísticas principales -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card content-box text-center h-100">
+                        <i class="fas fa-camera text-primary" style="font-size: 2.5rem;"></i>
+                        <h4>{{ escaneados }}/{{ total_qrs }}</h4>
+                        <p class="text-muted">QRs Escaneados</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card content-box text-center h-100">
+                        <i class="fas fa-comments text-success" style="font-size: 2.5rem;"></i>
+                        <h4>{{ comentarios|length }}</h4>
+                        <p class="text-muted">Comentarios</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barra de progreso -->
+            <div class="card content-box mb-4">
+                <h5><i class="fas fa-chart-line"></i> Progreso de Exploración</h5>
+                <div class="progress mb-2" style="height: 30px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: {{ porcentaje }}%">
+                        {{ porcentaje }}% Completado
+                    </div>
+                </div>
+                <p class="text-muted small">Has escaneado {{ escaneados }} de {{ total_qrs }} puntos de interés</p>
+            </div>
+
+            <!-- QRs escaneados -->
+            <div class="card content-box mb-4">
+                <h5><i class="fas fa-list"></i> QRs Escaneados</h5>
+                {% if progreso_qrs %}
+                    <div class="list-group">
+                        {% for item in progreso_qrs %}
+                            <a href="{% url 'contenido_qr' item.qr_visitado.id_unico %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ item.qr_visitado.numero_secuencial }}. {{ item.qr_visitado.titulo }}</h6>
+                                        <p class="text-muted small mb-0">{{ item.qr_visitado.ubicacion }}</p>
+                                    </div>
+                                    <small class="text-muted">{{ item.fecha_visita|date:"d/m/Y" }}</small>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">Aún no has escaneado QRs. <a href="{% url 'escanear_qr' %}">¡Comienza ahora!</a></p>
+                {% endif %}
+            </div>
+
+            <!-- Comentarios del usuario -->
+            <div class="card content-box">
+                <h5><i class="fas fa-comment-dots"></i> Mis Comentarios</h5>
+                {% if comentarios %}
+                    {% for comentario in comentarios %}
+                        <div class="card mb-3 border-0" style="background: #f8f9fa;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="card-title">{{ comentario.contenido_qr.qr.titulo }}</h6>
+                                        <p class="text-warning mb-2">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= comentario.calificacion %}
+                                                    ⭐
+                                                {% else %}
+                                                    ☆
+                                                {% endif %}
+                                            {% endfor %}
+                                        </p>
+                                    </div>
+                                    <small class="text-muted">{{ comentario.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <p class="card-text">{{ comentario.texto }}</p>
+                                {% if not comentario.moderado %}
+                                    <span class="badge bg-warning">Pendiente de moderación</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-4">No has dejado comentarios aún.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a href="{% url 'escanear_qr' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-camera"></i> Continuar Escaneando
+            </a>
+            <a href="{% url 'inicio' %}" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-home"></i> Volver al Inicio
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

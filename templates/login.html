@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card content-box">
+                <div class="text-center mb-4">
+                    <h2><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</h2>
+                    <p class="text-muted">Accede a tu cuenta para continuar tu aventura</p>
+                </div>
+
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nombre de usuario</label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-3">Iniciar Sesión</button>
+                </form>
+
+                <hr>
+
+                <p class="text-center text-muted">
+                    ¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate aquí</a>
+                </p>
+                <p class="text-center">
+                    <a href="{% url 'inicio' %}" class="btn btn-outline-secondary btn-sm">Volver al inicio</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

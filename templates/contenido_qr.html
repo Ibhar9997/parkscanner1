@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ qr.titulo }} - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Header del QR -->
+            <div class="card content-box mb-4">
+                <div class="row align-items-start">
+                    <div class="col-md-8">
+                        <h1>{{ qr.numero_secuencial }}. {{ qr.titulo }}</h1>
+                        <p class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ qr.ubicacion }}</p>
+                        <p>{{ qr.descripcion }}</p>
+                        
+                        {% if usuario_autenticado %}
+                            <span class="badge bg-success"><i class="fas fa-check"></i> Escaneado</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-center">
+                        {% if qr.qr_code_image %}
+                            <img src="{{ qr.qr_code_image.url }}" alt="QR Code" class="img-fluid" style="max-width: 150px;">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if contenido %}
+                <!-- Contenido del QR -->
+                <div class="card content-box mb-4">
+                    <h2><i class="fas fa-file-alt"></i> {{ contenido.titulo }}</h2>
+                    
+                    <!-- Imagen principal -->
+                    {% if contenido.imagen and contenido.mostrar_imagen %}
+                        <div class="mb-4 text-center">
+                            <img src="{{ contenido.imagen.url }}" alt="{{ contenido.titulo }}" class="rounded" style="width: 200px; height: 200px; object-fit: cover; margin-bottom: 20px;">
+                        </div>
+                    {% endif %}
+
+                    <!-- Descripción general -->
+                    <div class="mb-4">
+                        <h5>Descripción</h5>
+                        <p>{{ contenido.descripcion_detallada }}</p>
+                    </div>
+
+                    <!-- Video local o externo -->
+                    {% if contenido.mostrar_video %}
+                        {% if contenido.video_url_externa %}
+                            <!-- Video externo (YouTube, Google Drive, etc.) -->
+                            <div class="mb-4">
+                                <h5><i class="fas fa-video"></i> Video</h5>
+                                
+                                {% if 'youtube' in contenido.video_url_externa|lower or 'youtu.be' in contenido.video_url_externa|lower %}
+                                    <!-- Para YouTube: mostrar thumbnail + botón grande -->
+                                    <div class="text-center">
+                                        {% with video_id=contenido.get_youtube_video_id %}
+                                            {% if video_id %}
+                                                <div style="position: relative; display: inline-block; width: 100%; max-width: 100%;">
+                                                    <img src="https://img.youtube.com/vi/{{ video_id }}/maxresdefault.jpg" 
+                                                         alt="Video thumbnail" 
+                                                         style="width: 100%; max-width: 100%; border-radius: 10px; display: block; cursor: pointer;"
+                                                         onerror="this.src='https://img.youtube.com/vi/{{ video_id }}/hqdefault.jpg'">
+                                                    <a href="{{ contenido.get_video_url_original }}" target="_blank" rel="noopener noreferrer" 
+                                                       class="btn btn-danger" 
+                                                       style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; padding: 15px 30px; font-size: 16px; border-radius: 50px; white-space: nowrap;">
+                                                        <i class="fas fa-play"></i> Ver en YouTube
+                                                    </a>
+                                                </div>
+                                            {% else %}
+                                                <div class="alert alert-warning">
+                                                    <i class="fas fa-exclamation-triangle"></i> URL de YouTube no válida
+                                                </div>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                    <small class="text-muted d-block mt-2 text-center">
+                                        <i class="fas fa-info-circle"></i> Haz clic para ver el video en YouTube
+                                    </small>
+                                {% else %}
+                                    <!-- Para otras plataformas: intentar embed -->
+                                    <div style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; background: #000;">
+                                        <iframe 
+                                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; border-radius: 10px;"
+                                            src="{{ contenido.get_video_url_embed }}" 
+                                            title="Video del museo"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                            allowfullscreen>
+                                        </iframe>
+                                    </div>
+                                    {% if contenido.video_url_externa %}
+                                        <small class="text-muted d-block mt-2">
+                                            <a href="{{ contenido.get_video_url_original }}" target="_blank" rel="noopener noreferrer">
+                                                <i class="fas fa-external-link-alt"></i> Abrir en nueva ventana
+                                            </a>
+                                        </small>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        {% elif contenido.video %}
+                            <!-- Video local -->
+                            <div class="mb-4">
+                                <h5><i class="fas fa-video"></i> Video</h5>
+                                <video width="100%" controls style="max-width: 100%; border-radius: 10px;">
+                                    <source src="{{ contenido.video.url }}" type="video/mp4">
+                                    Tu navegador no soporta video HTML5.
+                                </video>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+                    <!-- Audio / Video (Audio también puede ser MP4) -->
+                    {% if contenido.audio and contenido.mostrar_audio %}
+                        <div class="mb-4">
+                            <h5><i class="fas fa-music"></i> Audio / Multimedia</h5>
+                            {% if contenido.audio.url|lower|slice:"-4:" == ".mp4" %}
+                                <!-- Si es MP4, reproducir como video -->
+                                <video width="100%" controls style="max-width: 100%; border-radius: 10px;">
+                                    <source src="{{ contenido.audio.url }}" type="video/mp4">
+                                    Tu navegador no soporta video HTML5.
+                                </video>
+                            {% else %}
+                                <!-- Si es audio, reproducir como audio -->
+                                <audio width="100%" controls style="width: 100%;">
+                                    <source src="{{ contenido.audio.url }}" type="audio/mpeg">
+                                    Tu navegador no soporta audio HTML5.
+                                </audio>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Información Histórica -->
+                    {% if contenido.datos_historicos and contenido.mostrar_historico %}
+                        <div class="mb-4 p-3" style="background: #f8f9fa; border-radius: 10px; border-left: 4px solid #ffc107;">
+                            <h5><i class="fas fa-history"></i> Información Histórica</h5>
+                            <p>{{ contenido.datos_historicos }}</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- Información Científica -->
+                    {% if contenido.datos_cientificos and contenido.mostrar_cientifico %}
+                        <div class="mb-4 p-3" style="background: #e7f3ff; border-radius: 10px; border-left: 4px solid #0dcaf0;">
+                            <h5><i class="fas fa-flask"></i> Información Científica</h5>
+                            <p>{{ contenido.datos_cientificos }}</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- Curiosidades -->
+                    {% if contenido.curiosidades and contenido.mostrar_curiosidades %}
+                        <div class="mb-4 p-3" style="background: #fff3cd; border-radius: 10px; border-left: 4px solid #fd7e14;">
+                            <h5><i class="fas fa-lightbulb"></i> Curiosidades</h5>
+                            <p>{{ contenido.curiosidades }}</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- Archivo para descargar -->
+                    {% if contenido.archivo_descarga and contenido.mostrar_archivo %}
+                        <div class="mb-4">
+                            <a href="{{ contenido.archivo_descarga.url }}" class="btn btn-outline-primary" download>
+                                <i class="fas fa-download"></i> Descargar Información
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Comentarios -->
+                {% if usuario_autenticado %}
+                    <div class="card content-box mb-4">
+                        <h3><i class="fas fa-comments"></i> Comentarios ({{ contenido.comentarios.count }})</h3>
+                        
+                        <!-- Formulario para agregar comentario -->
+                        <div class="mb-4 p-3" style="background: #f8f9fa; border-radius: 10px;">
+                            <h6>Deja tu comentario</h6>
+                            <form method="post" action="{% url 'agregar_comentario' qr.id %}">
+                                {% csrf_token %}
+                                
+                                <div class="mb-2">
+                                    <label class="form-label">Calificación</label>
+                                    <select name="calificacion" class="form-select" required>
+                                        <option value="5" selected>⭐⭐⭐⭐⭐ Excelente</option>
+                                        <option value="4">⭐⭐⭐⭐ Muy bueno</option>
+                                        <option value="3">⭐⭐⭐ Bueno</option>
+                                        <option value="2">⭐⭐ Regular</option>
+                                        <option value="1">⭐ Malo</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <textarea name="texto" class="form-control" placeholder="Tu comentario..." 
+                                              rows="3" required></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="fas fa-paper-plane"></i> Enviar Comentario
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Lista de comentarios aprobados -->
+                        <div id="comments-list">
+                            {% if comentarios_aprobados.count > 0 %}
+                                {% for comentario in comentarios_aprobados %}
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between">
+                                                <div>
+                                                    <h6 class="card-title">{{ comentario.usuario.first_name | default:comentario.usuario.username }}</h6>
+                                                    <p class="text-warning mb-2">
+                                                        {% for i in "12345" %}
+                                                            {% if forloop.counter <= comentario.calificacion %}
+                                                                ⭐
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </p>
+                                                </div>
+                                                <small class="text-muted">{{ comentario.fecha_creacion|date:"d/m/Y" }}</small>
+                                            </div>
+                                            <p class="card-text">{{ comentario.texto }}</p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted text-center">No hay comentarios aún. ¡Sé el primero!</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info" role="alert">
+                        <p><i class="fas fa-info-circle"></i> <a href="{% url 'login' %}">Inicia sesión</a> para ver y dejar comentarios</p>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle"></i> No hay contenido disponible para este QR aún.
+                </div>
+            {% endif %}
+
+            <!-- Botones de navegación -->
+            <div class="mt-4 text-center">
+                <a href="{% url 'escanear_qr' %}" class="btn btn-primary">
+                    <i class="fas fa-camera"></i> Escanear Otro QR
+                </a>
+                <a href="{% url 'inicio' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-home"></i> Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media (max-width: 768px) {
+        .col-md-8, .col-md-4 {
+            width: 100%;
+            margin-left: 0;
+        }
+        
+        .card {
+            margin: 0 !important;
+            margin-bottom: 1rem !important;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+        }
+        
+        h2 {
+            font-size: 1.25rem;
+        }
+        
+        h5 {
+            font-size: 1rem;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .row.align-items-start {
+            flex-direction: column;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .col-md-8 {
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .container {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        
+        .card.content-box {
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        
+        h1 {
+            font-size: 1.25rem;
+            word-wrap: break-word;
+        }
+        
+        h2 {
+            font-size: 1.1rem;
+        }
+        
+        p {
+            font-size: 0.95rem;
+        }
+        
+        .badge {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+        }
+        
+        .btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+        }
+        
+        .form-control, .form-select {
+            font-size: 16px;
+        }
+        
+        textarea {
+            min-height: 100px;
+        }
+        
+        video, iframe {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+        
+        .text-center {
+            margin: 0 auto;
+        }
+    }
+</style>
+{% endblock %}

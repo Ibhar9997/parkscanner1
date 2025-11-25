@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }} - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card content-box">
+                <h2 class="mb-4"><i class="fas fa-file-alt"></i> {{ titulo }}</h2>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Información General del Contenido -->
+                    <fieldset class="mb-4">
+                        <legend class="fs-6 fw-bold">Información General</legend>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de Contenido</label>
+                            {{ form.tipo_contenido }}
+                            {% if form.tipo_contenido.errors %}
+                                <div class="text-danger">{{ form.tipo_contenido.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Título del Contenido</label>
+                            {{ form.titulo }}
+                            {% if form.titulo.errors %}
+                                <div class="text-danger">{{ form.titulo.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descripción Detallada</label>
+                            {{ form.descripcion_detallada }}
+                            {% if form.descripcion_detallada.errors %}
+                                <div class="text-danger">{{ form.descripcion_detallada.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </fieldset>
+
+                    <!-- Archivos Multimedia -->
+                    <fieldset class="mb-4">
+                        <legend class="fs-6 fw-bold">Archivos Multimedia</legend>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Imagen</label>
+                            {% if contenido.imagen %}
+                                <div class="mb-2">
+                                    <img src="{{ contenido.imagen.url }}" alt="Imagen" style="max-width: 200px; height: auto;">
+                                </div>
+                            {% endif %}
+                            {{ form.imagen }}
+                            <small class="text-muted">Formatos: JPG, PNG, GIF</small>
+                            <div class="form-check mt-2">
+                                {{ form.mostrar_imagen }}
+                                <label class="form-check-label">Mostrar imagen en contenido</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Video (Archivo Local)</label>
+                            {{ form.video }}
+                            <small class="text-muted">Formatos: MP4, WebM</small>
+                            <div class="form-check mt-2">
+                                {{ form.mostrar_video }}
+                                <label class="form-check-label">Mostrar video en contenido</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Video (URL Externa)</label>
+                            {{ form.video_url_externa }}
+                            <small class="text-muted">Ingresa una URL de YouTube, Google Drive, Vimeo, etc. Si tienes video local y URL, se mostrará el video local primero.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Audio o Multimedia</label>
+                            {{ form.audio }}
+                            <small class="text-muted">Formatos: MP3, WAV, MP4</small>
+                            <div class="form-check mt-2">
+                                {{ form.mostrar_audio }}
+                                <label class="form-check-label">Mostrar audio en contenido</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Archivo para Descargar</label>
+                            {{ form.archivo_descarga }}
+                            <small class="text-muted">PDF, documentos, etc.</small>
+                            <div class="form-check mt-2">
+                                {{ form.mostrar_archivo }}
+                                <label class="form-check-label">Mostrar archivo descargable</label>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Información Educativa -->
+                    <fieldset class="mb-4">
+                        <legend class="fs-6 fw-bold">Información Educativa</legend>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-history"></i> Información Histórica
+                            </label>
+                            {{ form.datos_historicos }}
+                            <div class="form-check mt-2">
+                                {{ form.mostrar_historico }}
+                                <label class="form-check-label">Mostrar información histórica</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-flask"></i> Información Científica
+                            </label>
+                            {{ form.datos_cientificos }}
+                            <div class="form-check mt-2">
+                                {{ form.mostrar_cientifico }}
+                                <label class="form-check-label">Mostrar información científica</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-lightbulb"></i> Curiosidades
+                            </label>
+                            {{ form.curiosidades }}
+                            <div class="form-check mt-2">
+                                {{ form.mostrar_curiosidades }}
+                                <label class="form-check-label">Mostrar curiosidades</label>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Control -->
+                    <fieldset class="mb-4">
+                        <legend class="fs-6 fw-bold">Control</legend>
+                        
+                        <div class="form-check">
+                            {{ form.activo }}
+                            <label class="form-check-label">
+                                Contenido activo (visible para usuarios)
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-save"></i> Guardar Contenido
+                    </button>
+                    <a href="{% url 'admin_editar_qr' qr.id %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                </form>
+
+                <hr>
+
+                <div class="alert alert-info">
+                    <p class="mb-0">
+                        <i class="fas fa-info-circle"></i> 
+                        Una vez guardado, el contenido estará disponible en la página del QR ({{ qr.titulo }})
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    textarea {
+        min-height: 100px;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}

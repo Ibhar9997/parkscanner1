@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrarse - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card content-box">
+                <div class="text-center mb-4">
+                    <h2><i class="fas fa-user-plus"></i> Crear Cuenta</h2>
+                    <p class="text-muted">Únete a la aventura del museo</p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Nombre de usuario</label>
+                        <input type="text" class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                               name="username" value="{{ form.username.value|default:'' }}" required>
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nombre completo</label>
+                        <input type="text" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" 
+                               name="first_name" value="{{ form.first_name.value|default:'' }}" required>
+                        {% if form.first_name.errors %}
+                            <div class="invalid-feedback">{{ form.first_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Correo electrónico</label>
+                        <input type="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
+                               name="email" value="{{ form.email.value|default:'' }}" required>
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+                               name="password" required>
+                        {% if form.password.errors %}
+                            <div class="invalid-feedback">{{ form.password.errors.0 }}</div>
+                        {% endif %}
+                        <small class="text-muted">Mínimo 6 caracteres</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Confirmar contraseña</label>
+                        <input type="password" class="form-control {% if form.confirmar_password.errors %}is-invalid{% endif %}" 
+                               name="confirmar_password" required>
+                        {% if form.confirmar_password.errors %}
+                            <div class="invalid-feedback">{{ form.confirmar_password.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 mb-3">Crear Cuenta</button>
+                </form>
+
+                <hr>
+
+                <p class="text-center text-muted">
+                    ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a>
+                </p>
+                <p class="text-center">
+                    <a href="{% url 'inicio' %}" class="btn btn-outline-secondary btn-sm">Volver al inicio</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

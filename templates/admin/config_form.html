@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }} - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card content-box">
+                <h2 class="mb-4"><i class="fas fa-cog"></i> {{ titulo }}</h2>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <fieldset class="mb-4">
+                        <legend class="fs-6 fw-bold">Información del Museo</legend>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del Museo</label>
+                            {{ form.nombre }}
+                            {% if form.nombre.errors %}
+                                <div class="text-danger">{{ form.nombre.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            {{ form.descripcion }}
+                            {% if form.descripcion.errors %}
+                                <div class="text-danger">{{ form.descripcion.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ubicación Geográfica</label>
+                            {{ form.ubicacion }}
+                            {% if form.ubicacion.errors %}
+                                <div class="text-danger">{{ form.ubicacion.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Logo del Museo</label>
+                            {% if config.imagen_logo %}
+                                <div class="mb-2">
+                                    <img src="{{ config.imagen_logo.url }}" alt="Logo" style="max-width: 200px; height: auto;">
+                                </div>
+                            {% endif %}
+                            {{ form.imagen_logo }}
+                            <small class="text-muted">Formatos: JPG, PNG</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Imagen de Fondo</label>
+                            {% if config.imagen_fondo %}
+                                <div class="mb-2">
+                                    <img src="{{ config.imagen_fondo.url }}" alt="Fondo" style="max-width: 200px; height: auto; border-radius: 8px;">
+                                </div>
+                            {% endif %}
+                            {{ form.imagen_fondo }}
+                            <small class="text-muted">Se mostrará como fondo de la página. Formatos: JPG, PNG</small>
+                        </div>
+                    </fieldset>
+
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Guardar Configuración
+                    </button>
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    textarea {
+        min-height: 100px;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}

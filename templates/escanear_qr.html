@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}Escanear QR - MuseoQR{% endblock %}
+
+{% block extra_css %}
+<style>
+    #scanner-container {
+        max-width: 100%;
+        background: #000;
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    video {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    
+    .scanner-info {
+        text-align: center;
+        color: white;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 1rem;
+        border-radius: 0 0 15px 15px;
+    }
+    
+    .input-group {
+        width: 100%;
+        flex-wrap: nowrap;
+    }
+    
+    .input-group input {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    @media (max-width: 768px) {
+        .col-md-8 {
+            width: 100%;
+        }
+        
+        #scanner-container {
+            border-radius: 10px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+        }
+        
+        .card.content-box {
+            border-radius: 10px;
+            margin: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .container {
+            padding: 0 0.5rem;
+        }
+        
+        .card.content-box {
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        
+        #scanner-container {
+            max-width: 100vw;
+            margin: 0 -1rem;
+            width: calc(100% + 2rem);
+            border-radius: 0;
+        }
+        
+        h2 {
+            font-size: 1.25rem;
+        }
+        
+        p {
+            font-size: 0.9rem;
+        }
+        
+        .scanner-info {
+            padding: 0.75rem;
+            font-size: 0.85rem;
+        }
+        
+        .input-group {
+            display: flex;
+            width: 100%;
+        }
+        
+        .input-group input {
+            font-size: 16px;
+        }
+        
+        .btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card content-box">
+                <div class="text-center mb-4">
+                    <h2><i class="fas fa-camera"></i> {{ titulo }}</h2>
+                    <p class="text-muted">Apunta tu cámara al código QR</p>
+                </div>
+
+                <div id="scanner-container">
+                    <video id="video" width="400" height="300"></video>
+                    <div class="scanner-info">
+                        <p id="scanner-status">Inicializando cámara...</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <p class="text-muted small">O ingresa manualmente el código UUID:</p>
+                    <form method="get" action="{% url 'contenido_qr' '00000000-0000-0000-0000-000000000000' %}" 
+                          onsubmit="return false;" class="input-group">
+                        <input type="text" id="manual-uuid" class="form-control" placeholder="Código UUID..." required>
+                        <button type="button" class="btn btn-primary" onclick="manualQRSubmit()">Ir</button>
+                    </form>
+                </div>
+
+                <hr>
+
+                <p class="text-center">
+                    <a href="{% url 'inicio' %}" class="btn btn-outline-secondary w-100">Volver</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const statusEl = document.getElementById('scanner-status');
+
+    function startScanner() {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+                statusEl.textContent = '✅ Cámara activada. Apunta al QR.';
+                scanQR();
+            })
+            .catch(err => {
+                statusEl.textContent = '❌ Error: ' + err.message;
+                console.error('Error al acceder a la cámara:', err);
+            });
+    }
+
+    function scanQR() {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            
+            if (code) {
+                // Extraer UUID del QR
+                const qrData = code.data;
+                if (qrData.includes('/')) {
+                    const uuid = qrData.split('/')[qrData.split('/').length - 2];
+                    window.location.href = `/qr/${uuid}/`;
+                } else {
+                    statusEl.textContent = '❌ QR inválido. Intenta de nuevo.';
+                }
+            }
+        }
+        requestAnimationFrame(scanQR);
+    }
+
+    function manualQRSubmit() {
+        const uuid = document.getElementById('manual-uuid').value;
+        if (uuid.trim()) {
+            window.location.href = `/qr/${uuid}/`;
+        }
+    }
+
+    // Iniciar escáner cuando el documento esté listo
+    document.addEventListener('DOMContentLoaded', startScanner);
+</script>
+{% endblock %}

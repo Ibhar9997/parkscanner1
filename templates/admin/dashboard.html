@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Admin - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1><i class="fas fa-tachometer-alt"></i> Panel de Administración</h1>
+            <p class="text-muted">Bienvenido al panel de control del museo</p>
+        </div>
+    </div>
+
+    <!-- Estadísticas principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card content-box h-100 text-center">
+                <i class="fas fa-qrcode text-primary" style="font-size: 2rem;"></i>
+                <h5 class="mt-3">{{ total_qrs }}</h5>
+                <p class="text-muted">Códigos QR</p>
+                <small class="text-success">{{ qrs_activos }} activos</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card content-box h-100 text-center">
+                <i class="fas fa-users text-success" style="font-size: 2rem;"></i>
+                <h5 class="mt-3">{{ total_usuarios }}</h5>
+                <p class="text-muted">Usuarios</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card content-box h-100 text-center">
+                <i class="fas fa-comments text-warning" style="font-size: 2rem;"></i>
+                <h5 class="mt-3">{{ total_comentarios }}</h5>
+                <p class="text-muted">Comentarios</p>
+                <small class="text-danger">{{ comentarios_pendientes }} pendientes</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card content-box h-100 text-center">
+                <i class="fas fa-cog text-secondary" style="font-size: 2rem;"></i>
+                <h5 class="mt-3">Admin</h5>
+                <p class="text-muted">Configuración</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu de navegación del admin -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card content-box h-100">
+                <h5><i class="fas fa-qrcode"></i> Gestión de QR</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a href="{% url 'admin_qrs_list' %}" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="fas fa-list"></i> Ver Códigos QR
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'admin_crear_qr' %}" class="btn btn-sm btn-outline-success w-100">
+                            <i class="fas fa-plus"></i> Crear Nuevo QR
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card content-box h-100">
+                <h5><i class="fas fa-comments"></i> Comentarios</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a href="{% url 'admin_comentarios' %}" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="fas fa-list"></i> Ver Comentarios
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'admin_comentarios' %}?filtro=pendientes" class="btn btn-sm btn-outline-warning w-100">
+                            <i class="fas fa-hourglass"></i> Pendientes ({{ comentarios_pendientes }})
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card content-box h-100">
+                <h5><i class="fas fa-users"></i> Usuarios</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a href="{% url 'admin_usuarios' %}" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="fas fa-list"></i> Ver Usuarios
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'admin_estadisticas' %}" class="btn btn-sm btn-outline-info w-100">
+                            <i class="fas fa-chart-bar"></i> Estadísticas
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card content-box h-100">
+                <h5><i class="fas fa-cog"></i> Configuración</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a href="{% url 'admin_configuracion' %}" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="fas fa-sliders-h"></i> Configurar Museo
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acceso rápido a Django Admin -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                <a href="/admin/" target="_blank">Acceder a Django Admin</a> para gestión avanzada
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

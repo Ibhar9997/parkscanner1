@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }} - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-chart-bar"></i> {{ titulo }}</h2>
+        </div>
+    </div>
+
+    <!-- Métricas principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card content-box text-center h-100">
+                <i class="fas fa-users text-primary" style="font-size: 2.5rem;"></i>
+                <h4 class="mt-2">{{ total_usuarios }}</h4>
+                <p class="text-muted">Usuarios Registrados</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card content-box text-center h-100">
+                <i class="fas fa-qrcode text-success" style="font-size: 2.5rem;"></i>
+                <h4 class="mt-2">{{ total_qrs }}</h4>
+                <p class="text-muted">Códigos QR</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card content-box text-center h-100">
+                <i class="fas fa-camera text-info" style="font-size: 2.5rem;"></i>
+                <h4 class="mt-2">{{ total_escaneos }}</h4>
+                <p class="text-muted">Escaneos Totales</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card content-box text-center h-100">
+                <i class="fas fa-comments text-warning" style="font-size: 2.5rem;"></i>
+                <h4 class="mt-2">{{ total_comentarios }}</h4>
+                <p class="text-muted">Comentarios</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top usuarios -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card content-box">
+                <h5><i class="fas fa-medal"></i> Top 10 Usuarios (por escaneos)</h5>
+                <div class="list-group">
+                    {% if top_usuarios %}
+                        {% for item in top_usuarios %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ forloop.counter }}. {{ item.usuario__first_name | default:item.usuario__username }}</span>
+                                <span class="badge bg-primary rounded-pill">{{ item.count }}</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">No hay datos disponibles</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- QRs más visitados -->
+        <div class="col-md-6 mb-4">
+            <div class="card content-box">
+                <h5><i class="fas fa-fire"></i> QRs Más Visitados</h5>
+                <div class="list-group">
+                    {% if qrs_populares %}
+                        {% for item in qrs_populares %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ item.qr_visitado__titulo }}</span>
+                                <span class="badge bg-success rounded-pill">{{ item.count }} visitas</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">No hay datos disponibles</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card content-box">
+                <h5>Resumen</h5>
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <p class="text-muted">Promedio de escaneos por usuario</p>
+                        <h4>
+                            {% if total_usuarios > 0 %}
+                                {{ total_escaneos|floatformat:1 }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </h4>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="text-muted">Promedio de comentarios por usuario</p>
+                        <h4>
+                            {% if total_usuarios > 0 %}
+                                {{ total_comentarios|floatformat:1 }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </h4>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="text-muted">Tasa de participación</p>
+                        <h4>
+                            {% if total_usuarios > 0 and total_escaneos > 0 %}
+                                {{ total_escaneos|floatformat:0 }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">Volver al Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

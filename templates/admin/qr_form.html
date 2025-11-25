@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }} - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card content-box">
+                <h2 class="mb-4"><i class="fas fa-qrcode"></i> {{ titulo }}</h2>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Datos básicos del QR -->
+                    <fieldset class="mb-4">
+                        <legend class="fs-6 fw-bold">Información General</legend>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Número Secuencial</label>
+                            {{ form.numero_secuencial }}
+                            {% if form.numero_secuencial.errors %}
+                                <div class="text-danger">{{ form.numero_secuencial.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Título</label>
+                            {{ form.titulo }}
+                            {% if form.titulo.errors %}
+                                <div class="text-danger">{{ form.titulo.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descripción Breve</label>
+                            {{ form.descripcion }}
+                            {% if form.descripcion.errors %}
+                                <div class="text-danger">{{ form.descripcion.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ubicación en el Museo</label>
+                            {{ form.ubicacion }}
+                            {% if form.ubicacion.errors %}
+                                <div class="text-danger">{{ form.ubicacion.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-check">
+                            {{ form.activo }}
+                            <label class="form-check-label">
+                                Activo (visible para usuarios)
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-save"></i> 
+                        {% if action == 'crear' %}Crear QR{% else %}Guardar Cambios{% endif %}
+                    </button>
+                    <a href="{% url 'admin_qrs_list' %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                </form>
+
+                <!-- Información adicional -->
+                {% if action == 'editar' %}
+                    <hr>
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-lightbulb"></i> Próximo paso</h6>
+                        <p class="mb-0">
+                            <a href="{% url 'admin_contenido_qr' qr.id %}">
+                                <strong>Agregar contenido multimedia</strong>
+                            </a>
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

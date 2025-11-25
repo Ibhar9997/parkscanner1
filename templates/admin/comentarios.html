@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Comentarios - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-comments"></i> Gestión de Comentarios</h2>
+            <p class="text-muted">Total: {{ page_obj.paginator.count }} comentarios</p>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="mb-4">
+        <div class="btn-group" role="group">
+            <a href="{% url 'admin_comentarios' %}?filtro=todos" 
+               class="btn {% if filtro == 'todos' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Todos
+            </a>
+            <a href="{% url 'admin_comentarios' %}?filtro=pendientes" 
+               class="btn {% if filtro == 'pendientes' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                Pendientes
+            </a>
+            <a href="{% url 'admin_comentarios' %}?filtro=aprobados" 
+               class="btn {% if filtro == 'aprobados' %}btn-success{% else %}btn-outline-success{% endif %}">
+                Aprobados
+            </a>
+        </div>
+    </div>
+
+    <!-- Lista de comentarios -->
+    {% if comentarios %}
+        {% for comentario in comentarios %}
+            <div class="card content-box mb-3">
+                <div class="row align-items-start">
+                    <div class="col-md-9">
+                        <h5>{{ comentario.contenido_qr.qr.titulo }}</h5>
+                        <p class="text-muted mb-2">
+                            Por: <strong>{{ comentario.usuario.first_name | default:comentario.usuario.username }}</strong>
+                        </p>
+                        
+                        <p class="text-warning mb-2">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= comentario.calificacion %}⭐{% else %}☆{% endif %}
+                            {% endfor %}
+                        </p>
+                        
+                        <p class="mb-2">{{ comentario.texto }}</p>
+                        
+                        <small class="text-muted">{{ comentario.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                        
+                        <br><br>
+                        
+                        {% if not comentario.moderado %}
+                            <span class="badge bg-warning">Pendiente de moderación</span>
+                        {% else %}
+                            <span class="badge bg-success">Aprobado</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <a href="{% url 'admin_moderar_comentario' comentario.id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i> Moderar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        <!-- Paginación -->
+        {% if page_obj.has_other_pages %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1&filtro={{ filtro }}">Primera</a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&filtro={{ filtro }}">Siguiente</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No hay comentarios disponibles.
+        </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">Volver al Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

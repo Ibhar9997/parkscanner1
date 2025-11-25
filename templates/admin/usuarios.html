@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Usuarios - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-users"></i> Gestión de Usuarios</h2>
+            <p class="text-muted">Total: {{ page_obj.paginator.count }} usuarios</p>
+        </div>
+    </div>
+
+    {% if usuarios %}
+        <div class="card content-box mb-4">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th>Nivel</th>
+                            <th>Puntos</th>
+                            <th>QRs Escaneados</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                            <tr>
+                                <td>
+                                    <strong>{{ usuario.first_name | default:usuario.username }}</strong><br>
+                                    <small class="text-muted">@{{ usuario.username }}</small>
+                                </td>
+                                <td>{{ usuario.email }}</td>
+                                <td>
+                                    {% if usuario.perfil_museo %}
+                                        <span class="badge bg-success">{{ usuario.perfil_museo.nivel }}</span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if usuario.perfil_museo %}
+                                        {{ usuario.perfil_museo.puntos }} 🏆
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if usuario.perfil_museo %}
+                                        {{ usuario.perfil_museo.total_qrs_escaneados }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if usuario.is_active %}
+                                        <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Paginación -->
+        {% if page_obj.has_other_pages %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">Primera</a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No hay usuarios aún.
+        </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">Volver al Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
