@@ -3,12 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
-from django.db.models import Q, Count
-from datetime import datetime
-import json
+from django.db.models import Count
 
 from qrmuseum.models import (
     QRCode, ContenidoQR, Comentario, ProgresoUsuario, 
@@ -117,9 +113,6 @@ def logout_view(request):
 
 def escanear_qr(request):
     """Página para escanear un código QR"""
-    if not request.user.is_authenticated:
-        return redirect('login')
-    
     data = {
         'titulo': 'Escanear Código QR'
     }
@@ -245,13 +238,8 @@ def editar_perfil(request):
 
 # ==================== VISTAS DE ADMINISTRACIÓN ====================
 
-def admin_required(user):
-    """Decorador para verificar si el usuario es admin"""
-    return user.is_staff or user.is_superuser
-
-
 @login_required(login_url='login')
-@user_passes_test(admin_required, login_url='inicio')
+@user_passes_test(es_admin, login_url='inicio')
 def admin_dashboard(request):
     """Panel de administración principal"""
     total_qrs = QRCode.objects.count()
@@ -272,7 +260,7 @@ def admin_dashboard(request):
 
 
 @login_required(login_url='login')
-@user_passes_test(admin_required, login_url='inicio')
+@user_passes_test(es_admin, login_url='inicio')
 def admin_qrs_list(request):
     """Lista de códigos QR para administración"""
     qrs = QRCode.objects.all().order_by('numero_secuencial')
@@ -291,7 +279,7 @@ def admin_qrs_list(request):
 
 
 @login_required(login_url='login')
-@user_passes_test(admin_required, login_url='inicio')
+@user_passes_test(es_admin, login_url='inicio')
 def admin_crear_qr(request):
     """Crear nuevo código QR"""
     if request.method == 'POST':
@@ -313,7 +301,7 @@ def admin_crear_qr(request):
 
 
 @login_required(login_url='login')
-@user_passes_test(admin_required, login_url='inicio')
+@user_passes_test(es_admin, login_url='inicio')
 def admin_editar_qr(request, qr_id):
     """Editar código QR existente"""
     qr = get_object_or_404(QRCode, id=qr_id)
@@ -342,7 +330,7 @@ def admin_editar_qr(request, qr_id):
 
 
 @login_required(login_url='login')
-@user_passes_test(admin_required, login_url='inicio')
+@user_passes_test(es_admin, login_url='inicio')
 def admin_eliminar_qr(request, qr_id):
     """Eliminar código QR"""
     qr = get_object_or_404(QRCode, id=qr_id)
@@ -362,7 +350,7 @@ def admin_eliminar_qr(request, qr_id):
 
 
 @login_required(login_url='login')
-@user_passes_test(admin_required, login_url='inicio')
+@user_passes_test(es_admin, login_url='inicio')
 def admin_contenido_qr(request, qr_id):
     """Crear/editar contenido de un QR"""
     qr = get_object_or_404(QRCode, id=qr_id)
@@ -390,7 +378,7 @@ def admin_contenido_qr(request, qr_id):
 
 
 @login_required(login_url='login')
-@user_passes_test(admin_required, login_url='inicio')
+@user_passes_test(es_admin, login_url='inicio')
 def admin_comentarios(request):
     """Gestionar comentarios (moderar)"""
     filtro = request.GET.get('filtro', 'todos')
@@ -419,7 +407,7 @@ def admin_comentarios(request):
 
 
 @login_required(login_url='login')
-@user_passes_test(admin_required, login_url='inicio')
+@user_passes_test(es_admin, login_url='inicio')
 def admin_moderar_comentario(request, comentario_id):
     """Moderar un comentario (aprobar/rechazar)"""
     comentario = get_object_or_404(Comentario, id=comentario_id)
@@ -446,7 +434,7 @@ def admin_moderar_comentario(request, comentario_id):
 
 
 @login_required(login_url='login')
-@user_passes_test(admin_required, login_url='inicio')
+@user_passes_test(es_admin, login_url='inicio')
 def admin_configuracion(request):
     """Configurar datos del museo"""
     config, _ = MuseoConfig.objects.get_or_create(id=1)
@@ -470,7 +458,7 @@ def admin_configuracion(request):
 
 
 @login_required(login_url='login')
-@user_passes_test(admin_required, login_url='inicio')
+@user_passes_test(es_admin, login_url='inicio')
 def admin_usuarios(request):
     """Gestionar usuarios del sistema"""
     usuarios = User.objects.all().select_related('perfil_museo')
@@ -489,7 +477,95 @@ def admin_usuarios(request):
 
 
 @login_required(login_url='login')
-@user_passes_test(admin_required, login_url='inicio')
+@user_passes_test(es_admin, login_url='inicio')
+def admin_editar_usuario(request, user_id):
+    """Editar privilegios y estado de un usuario"""
+    usuario = get_object_or_404(User, id=user_id)
+    
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
+        
+        # Asignar/Remover admin
+        if accion == 'hacer_admin':
+            usuario.is_staff = True
+            usuario.is_superuser = True
+            usuario.save()
+            messages.success(request, f'{usuario.username} ahora es administrador')
+        
+        elif accion == 'remover_admin':
+            usuario.is_staff = False
+            usuario.is_superuser = False
+            usuario.save()
+            messages.success(request, f'{usuario.username} ya no es administrador')
+        
+        # Desbloquear contenido (simular que escaneó todos los QR)
+        elif accion == 'desbloquear_contenido':
+            qrs = QRCode.objects.filter(activo=True)
+            for qr in qrs:
+                ProgresoUsuario.objects.get_or_create(
+                    usuario=usuario,
+                    qr_visitado=qr
+                )
+            # Actualizar estadísticas
+            try:
+                usuario_museo = usuario.perfil_museo
+                usuario_museo.total_qrs_escaneados = qrs.count()
+                usuario_museo.puntos = qrs.count() * 10
+                usuario_museo.save()
+            except UsuarioMuseo.DoesNotExist:
+                pass
+            messages.success(request, f'Contenido desbloqueado para {usuario.username}')
+        
+        # Activar/Desactivar usuario
+        elif accion == 'desactivar':
+            usuario.is_active = False
+            usuario.save()
+            messages.success(request, f'{usuario.username} ha sido desactivado')
+        
+        elif accion == 'activar':
+            usuario.is_active = True
+            usuario.save()
+            messages.success(request, f'{usuario.username} ha sido reactivado')
+        
+        return redirect('admin_usuarios')
+    
+    data = {
+        'usuario': usuario,
+        'titulo': f'Editar Usuario: {usuario.username}'
+    }
+    
+    return render(request, 'admin/editar_usuario.html', data)
+
+
+@login_required(login_url='login')
+@user_passes_test(es_admin, login_url='inicio')
+def admin_eliminar_usuario(request, user_id):
+    """Eliminar un usuario"""
+    usuario = get_object_or_404(User, id=user_id)
+    
+    # Prevenir eliminación del propio usuario admin actual
+    if usuario.id == request.user.id:
+        messages.error(request, 'No puedes eliminar tu propia cuenta')
+        return redirect('admin_usuarios')
+    
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
+        if accion == 'confirmar_eliminar':
+            username = usuario.username
+            usuario.delete()
+            messages.success(request, f'Usuario "{username}" eliminado correctamente')
+            return redirect('admin_usuarios')
+    
+    data = {
+        'usuario': usuario,
+        'titulo': f'Confirmar eliminación de: {usuario.username}'
+    }
+    
+    return render(request, 'admin/confirmar_eliminar_usuario.html', data)
+
+
+@login_required(login_url='login')
+@user_passes_test(es_admin, login_url='inicio')
 def admin_estadisticas(request):
     """Ver estadísticas del museo"""
     total_usuarios = User.objects.count()

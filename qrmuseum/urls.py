@@ -28,5 +28,7 @@ urlpatterns = [
     path('app/comentario/<int:comentario_id>/moderar/', views.admin_moderar_comentario, name='admin_moderar_comentario'),
     path('app/configuracion/', views.admin_configuracion, name='admin_configuracion'),
     path('app/usuarios/', views.admin_usuarios, name='admin_usuarios'),
+    path('app/usuario/<int:user_id>/editar/', views.admin_editar_usuario, name='admin_editar_usuario'),
+    path('app/usuario/<int:user_id>/eliminar/', views.admin_eliminar_usuario, name='admin_eliminar_usuario'),
     path('app/estadisticas/', views.admin_estadisticas, name='admin_estadisticas'),
 ]

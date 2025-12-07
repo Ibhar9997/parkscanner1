@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Usuario - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card content-box border-danger mt-5">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> {{ titulo }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger mb-4">
+                        <strong>⚠️ Acción Irreversible</strong>
+                        <p class="mb-0 mt-2">
+                            Esta acción no puede ser deshecha. Se eliminarán todos los datos asociados a este usuario.
+                        </p>
+                    </div>
+
+                    <div class="info-box mb-4 p-3 bg-light border rounded">
+                        <p class="mb-2">
+                            <strong>Usuario:</strong> {{ usuario.username }}
+                        </p>
+                        <p class="mb-2">
+                            <strong>Email:</strong> {{ usuario.email }}
+                        </p>
+                        <p class="mb-0">
+                            <strong>Nombre:</strong> {{ usuario.first_name | default:"No especificado" }}
+                        </p>
+                    </div>
+
+                    <h6 class="mb-3">Se eliminarán:</h6>
+                    <ul class="mb-4">
+                        <li>Cuenta de usuario</li>
+                        <li>Perfil de museo</li>
+                        <li>Progreso de escaneo ({{ usuario.progreso_qr.count }} registros)</li>
+                        <li>Comentarios realizados ({{ usuario.comentarios_museo.count }} comentarios)</li>
+                        <li>Avatar e información personal</li>
+                    </ul>
+
+                    <form method="POST" class="d-grid gap-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="accion" value="confirmar_eliminar">
+                        
+                        <button type="submit" class="btn btn-danger btn-lg" onclick="return confirm('¿Estás completamente seguro de que deseas eliminar este usuario? Esta acción es irreversible.')">
+                            <i class="fas fa-trash"></i> Eliminar Usuario Permanentemente
+                        </button>
+                        
+                        <a href="{% url 'admin_usuarios' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </form>
+
+                    <div class="alert alert-info mt-4 mb-0">
+                        <small>
+                            <i class="fas fa-info-circle"></i> Si lo prefieres, puedes desactivar el usuario en lugar de eliminarlo.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .content-box {
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}

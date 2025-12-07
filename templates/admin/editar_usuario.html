@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Usuario - MuseoQR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-user-edit"></i> {{ titulo }}</h2>
+            <p class="text-muted">Email: <strong>{{ usuario.email }}</strong></p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Información del usuario -->
+            <div class="card content-box mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Información del Usuario</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Nombre de usuario:</dt>
+                        <dd class="col-sm-8"><strong>{{ usuario.username }}</strong></dd>
+
+                        <dt class="col-sm-4">Nombre completo:</dt>
+                        <dd class="col-sm-8">{{ usuario.first_name | default:"No especificado" }}</dd>
+
+                        <dt class="col-sm-4">Email:</dt>
+                        <dd class="col-sm-8">{{ usuario.email }}</dd>
+
+                        {% if usuario.perfil_museo %}
+                            <dt class="col-sm-4">Nivel:</dt>
+                            <dd class="col-sm-8"><span class="badge bg-success">{{ usuario.perfil_museo.nivel }}</span></dd>
+
+                            <dt class="col-sm-4">Puntos:</dt>
+                            <dd class="col-sm-8">{{ usuario.perfil_museo.puntos }} 🏆</dd>
+
+                            <dt class="col-sm-4">QRs Escaneados:</dt>
+                            <dd class="col-sm-8">{{ usuario.perfil_museo.total_qrs_escaneados }}</dd>
+
+                            <dt class="col-sm-4">Comentarios:</dt>
+                            <dd class="col-sm-8">{{ usuario.perfil_museo.total_comentarios }}</dd>
+
+                            <dt class="col-sm-4">Apodo de juego:</dt>
+                            <dd class="col-sm-8">{{ usuario.perfil_museo.apodo_juego | default:"No especificado" }}</dd>
+                        {% endif %}
+
+                        <dt class="col-sm-4">Estado:</dt>
+                        <dd class="col-sm-8">
+                            {% if usuario.is_active %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                            {% endif %}
+                        </dd>
+
+                        <dt class="col-sm-4">Rol:</dt>
+                        <dd class="col-sm-8">
+                            {% if usuario.is_superuser %}
+                                <span class="badge bg-danger">Administrador</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Usuario Regular</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Acciones disponibles -->
+            <div class="card content-box">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Acciones</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Asignar/Remover Admin -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        <h6 class="mb-3"><i class="fas fa-shield-alt"></i> Permisos de Administrador</h6>
+                        {% if usuario.is_superuser %}
+                            <p class="text-muted mb-3">Este usuario actualmente es administrador.</p>
+                            <form method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="remover_admin">
+                                <button type="submit" class="btn btn-warning" onclick="return confirm('¿Remover permisos de administrador?')">
+                                    <i class="fas fa-times-circle"></i> Remover Permisos de Admin
+                                </button>
+                            </form>
+                        {% else %}
+                            <p class="text-muted mb-3">Este usuario actualmente NO es administrador.</p>
+                            <form method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="hacer_admin">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Asignar permisos de administrador?')">
+                                    <i class="fas fa-shield-alt"></i> Hacer Administrador
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+
+                    <!-- Desbloquear Contenido -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        <h6 class="mb-3"><i class="fas fa-unlock"></i> Desbloquear Contenido</h6>
+                        <p class="text-muted mb-3">Simula que el usuario ha escaneado todos los QR disponibles.</p>
+                        <form method="POST" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="accion" value="desbloquear_contenido">
+                            <button type="submit" class="btn btn-success" onclick="return confirm('¿Desbloquear todo el contenido para este usuario?')">
+                                <i class="fas fa-unlock"></i> Desbloquear Contenido
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Activar/Desactivar Usuario -->
+                    <div class="mb-3">
+                        <h6 class="mb-3"><i class="fas fa-power-off"></i> Estado de la Cuenta</h6>
+                        {% if usuario.is_active %}
+                            <p class="text-muted mb-3">Este usuario está activo.</p>
+                            <form method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="desactivar">
+                                <button type="submit" class="btn btn-warning" onclick="return confirm('¿Desactivar este usuario?')">
+                                    <i class="fas fa-ban"></i> Desactivar Usuario
+                                </button>
+                            </form>
+                        {% else %}
+                            <p class="text-muted mb-3">Este usuario está inactivo.</p>
+                            <form method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="activar">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check-circle"></i> Activar Usuario
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Resumen rápido -->
+            <div class="card content-box mb-4 border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Resumen</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Estado:</small>
+                        <div>
+                            {% if usuario.is_active %}
+                                <span class="badge bg-success p-2">✓ Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger p-2">✗ Inactivo</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Rol:</small>
+                        <div>
+                            {% if usuario.is_superuser %}
+                                <span class="badge bg-danger p-2">👑 Admin</span>
+                            {% else %}
+                                <span class="badge bg-secondary p-2">👤 Usuario</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if usuario.perfil_museo %}
+                        <div class="mb-3">
+                            <small class="text-muted">Progreso:</small>
+                            <div>
+                                <div class="progress">
+                                    {% with total_qrs=usuario.perfil_museo.total_qrs_escaneados %}
+                                        <div class="progress-bar" style="width: {{ total_qrs }}%">
+                                            {{ total_qrs }}%
+                                        </div>
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card content-box">
+                <div class="card-body">
+                    <a href="{% url 'admin_usuarios' %}" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-arrow-left"></i> Volver a Usuarios
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<style>
+    .content-box {
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}

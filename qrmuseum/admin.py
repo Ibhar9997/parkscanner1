@@ -81,7 +81,7 @@ class ComentarioAdmin(admin.ModelAdmin):
 
 @admin.register(ProgresoUsuario)
 class ProgresoUsuarioAdmin(admin.ModelAdmin):
-    list_display = ['usuario', 'qr_visitado', 'fecha_visita', 'tiempo_permanencia']
+    list_display = ['usuario', 'qr_visitado', 'fecha_visita']
     list_filter = ['fecha_visita']
     search_fields = ['usuario__username', 'qr_visitado__titulo']
     readonly_fields = ('fecha_visita', 'fecha_completado')

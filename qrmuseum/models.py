@@ -186,25 +186,6 @@ class ContenidoQR(models.Model):
             return f'https://{url}'
         
         return url
-    
-    def get_youtube_video_id(self):
-        """Extrae el ID de video de YouTube de una URL"""
-        if not self.video_url_externa:
-            return None
-        
-        url = self.video_url_externa.strip()
-        
-        # Formato: youtube.com/watch?v=VIDEO_ID
-        if 'watch?v=' in url:
-            return url.split('watch?v=')[1].split('&')[0]
-        # Formato: youtu.be/VIDEO_ID
-        elif 'youtu.be/' in url:
-            return url.split('youtu.be/')[1].split('?')[0].split('&')[0]
-        # Formato: youtube.com/embed/VIDEO_ID (ya está en embed)
-        elif 'embed/' in url:
-            return url.split('embed/')[1].split('?')[0].split('&')[0]
-        
-        return None
 
 
 class ProgresoUsuario(models.Model):
@@ -213,7 +194,6 @@ class ProgresoUsuario(models.Model):
     qr_visitado = models.ForeignKey(QRCode, on_delete=models.CASCADE, related_name='visitantes')
     fecha_visita = models.DateTimeField(auto_now_add=True)
     fecha_completado = models.DateTimeField(auto_now=True)
-    tiempo_permanencia = models.IntegerField(default=0, help_text="Tiempo en segundos")
     
     class Meta:
         verbose_name = 'Progreso Usuario'
